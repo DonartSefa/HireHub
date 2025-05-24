@@ -35,7 +35,8 @@ if (!$job) {
     <div class="job-details">
         <div class="job-card">
             <div class="image">
-                <img src="view_image.php?id=1" alt="Uploaded Image">
+                <img src="<?php echo htmlspecialchars($job['image']); ?>" alt="Job Image" style="width: 100%; border-radius: 10px;" />
+
             </div>
             <div class="j-cont">
                 <h3 class="applying-text">You are applying in <?php echo htmlspecialchars($job['company']); ?></h3>

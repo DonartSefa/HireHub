@@ -17,19 +17,31 @@ $username = $_SESSION['username'];
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KosovaJob Header</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Inter', sans-serif;
+      background-color: #f9f9f9;
+      padding-top: 80px; /* Make sure content doesn't get hidden behind fixed header */
     }
 
+    /* Fixed header at top */
     .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 20px;
-      border-bottom: 1px solid #eee;
+      padding: 16px 40px;
+
+      background-color: #f6f6f3;
+      border-bottom: 1px solid #e0e0e0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
     .logo {
@@ -38,90 +50,128 @@ $username = $_SESSION['username'];
     }
 
     .logo img {
-      height: 30px;
-      margin-right: 8px;
+      height: 38px;
+      scale: 1.7;
     }
 
     .nav {
       display: flex;
+      gap: 28px;
       align-items: center;
-      gap: 20px;
     }
 
     .nav a {
       text-decoration: none;
-      color: #222;
+      font-weight: 500;
       font-size: 14px;
+      color: #333;
+      transition: color 0.25s ease;
+      position: relative;
     }
 
-    .nav .dropdown::after {
-      content: '▼';
-      font-size: 10px;
-      margin-left: 4px;
+    .nav a::after {
+      content: '';
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      left: 0;
+      bottom: -5px;
+      background-color: #846c3b;
+      transition: width 0.25s ease;
+    }
+
+    .nav a:hover {
+      color: #846c3b;
+    }
+
+    .nav a:hover::after {
+      width: 100%;
     }
 
     .icons {
       display: flex;
       align-items: center;
-      gap: 15px;
-    }
-
-    .profile-button {
-      background-color: #fcbfa4;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 4px;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
+      gap: 18px;
     }
 
     .icon {
-      font-size: 16px;
+      font-size: 20px;
       cursor: pointer;
+      transition: transform 0.2s;
+      user-select: none;
+    }
+
+    .icon:hover {
+      transform: scale(1.15);
+    }
+
+    .profile-button {
+      background-color: #846c3b;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    .profile-button:hover {
+      background-color: #6c552f;
+    }
+
+    .container3 {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    a.logout-link {
+      display: block;
+      text-align: right;
+      padding: 15px 40px;
+      font-size: 14px;
+      text-decoration: none;
+      color: #999;
+      transition: color 0.2s;
+    }
+
+    a.logout-link:hover {
+      color: #846c3b;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
+
+<div class="container3">
+  <header class="header">
     <div class="logo">
-      <img src="logo.png" alt="KosovaJob Logo" />
-      <strong>KOSOVAJOB</strong>
+      <a href="dashboard.php"><img src="jobhorizon.png" alt="KosovaJob Logo" /></a>
     </div>
     <nav class="nav">
-      <a href="#">THIRRJET PËR APLIKIME</a>
-      <a href="#">BLOG</a>
-      <a href="#">PUBLIKO KONKURS</a>
-      <a href="#">KONTAKT</a>
-      <a href="#" class="dropdown">PRODUKTET</a>
+      <?php if ($user_type === 'employer'): ?>
+        <a href="post-job.php">Post a Job</a>
+        <a href="employer-dashboard.php">Your Posts</a>
+      <?php elseif ($user_type === 'job_seeker'): ?>
+        <a href="my-applications.php">Applications</a>
+        <a href="employer-dashboard.php">Your Posts</a>
+      <?php endif; ?>
+      <a href="#">Kontakt</a>
+      <a href="#" class="dropdown">Produktet ▼</a>
       <a href="#">EN</a>
     </nav>
     <div class="icons">
-      <span class="icon">🔔</span>
-      <span class="icon">🔍</span>
-      <button class="profile-button">PROFILI IM</button>
-    </div>  
+      <span class="icon" title="Search">🔍</span>
+      <button class="profile-button"><?= htmlspecialchars($username) ?></button>
+    </div>
   </header>
-  </div>
+</div>
 
-</body>
-</html>
+<?php if ($user_type === 'job_seeker'): ?>
+  <?php include_once 'browse-jobs.php'; ?>
+<?php endif; ?>
 
+<a href="logout.php" class="logout-link">Logout</a>
 
-
-  <h2>Welcome, <?php echo htmlspecialchars($username); ?>!</h2>
-
-  <?php if ($user_type === 'employer'): ?>
-    <p><a href="employer-dashboard.php">Go to Employer Dashboard</a></p>
-    <p><a href="post-job.php">Post a New Job</a></p>
-  <?php elseif ($user_type === 'job_seeker'): ?>
-    <p><a href="browse-jobs.php">Browse Jobs</a></p>
-    <p><a href="my-applications.php">My Applications</a></p>
-  <?php else: ?>
-    <p>User type unknown.</p>
-  <?php endif; ?>
-
-  <p><a href="logout.php">Logout</a></p>
 </body>
 </html>
