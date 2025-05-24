@@ -155,6 +155,7 @@ $username = $_SESSION['username'];
       <?php elseif ($user_type === 'job_seeker'): ?>
         <a href="my-applications.php">Applications</a>
         <a href="employer-dashboard.php">Your Posts</a>
+        
       <?php endif; ?>
       <a href="#">Kontakt</a>
       <a href="#" class="dropdown">Produktet ▼</a>
@@ -169,6 +170,7 @@ $username = $_SESSION['username'];
 
 <?php if ($user_type === 'job_seeker'): ?>
   <?php include_once 'browse-jobs.php'; ?>
+  
 <?php endif; ?>
 
 <a href="logout.php" class="logout-link">Logout</a>
