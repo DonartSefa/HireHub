@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "joboard-460821",
+  "private_key_id": "3a59cb31ef3dd468f39e3bc651703e00f0eaedc5",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCvTswwVcZ3QG9E\nMtXYgEMJNfPUyg9SC/MjFWqxLeqfyKVhJlneYfY2JzfNB0e1EeyqyJaGJ/kLYG8/\nQM55nf3xeZXOgpSFT0jfWoMawKtOtt9Eeo2YXkHChySzCdcVvVDrFYnRSAOKei+0\nNjVVDIr6W4wY+XM4BKHOCxoDlYfcqc12W4srCAQE0xXb0/rnOlglspG+NfVHVp4B\npgw50Bj6+LUcsYF4a4OR1qneqc8qWP6F3aAAkxNomd208W8Kcw3NOtYBbDpeD5ro\nNrVJxBKSx+Nc/fGQsgAcFMl5a4FGcbJpgnMnGzipHMLCRSP3w6lvYD9RQBtMa+QK\nGIOW453FAgMBAAECggEAGzhg/CBVcK7QmAZMrhE8V3HJKoE1X8f7OLdamahHhgfh\npfQOgDk1wbLVN0CqIbNmzB3ZQXtzcBDJNUkaxkeB5ry6RhaAeTKWXhfvw3enIdHD\nWR6uXbpE+6+AQ0yD2RxMNDRj8dr8scPHJHRGU65e5gDRAA+7lDcj6JpQr73IGrsA\neQ9rsHk7YHySGVTuhZ5ataXwbqfPOi2Xivcb99LUGcxLy4N0JMKzsYWEgXThHg41\n+O81UshvZhnoQg/Gys2OHPZP09Nvx0+YQLErNw/MSV/HlrWOLMuMwUQWdQO2JC++\nYA6Qt1Z+frprMWHfPJZxgtcW6ye4DgZIXXtM74UwAQKBgQD0Fq9i5CMj7L9tu1wn\n/tT8lNYGQ5RfQSkXdqGvtGby0q9Ajz4PTv+6oUift8hBNhNUCqQNmO/AzchfYmvD\nZu3jmvQHsgntUtQXQenMDK8QYLZp1MdACKXDqlbFwuBBfblIxpNlUMMlhmIxnKBc\nghwdvTZ2eq4iVIZUgt4mi6ByEQKBgQC33NuI4iQsuuVNaYyOngJUn1XznXFWYGvf\nSKLHNvNQgaKsTkZfcH59kB8yOl5FBmb5MdYxwD9xoqJwvPyXpjp5oUJ1gGimiNVJ\nRxHYIDn0rotpq7T15mTzq0fiE0TuRvZV6w+jbLQapu6k+dfiEHrqDbhunkCVZwhr\nNQXGOxu8dQKBgFXQl+7bqGMb/B1XLso89KKsrSZcohBvN0QxiBze/wbF/alj8vys\n2InD5GWK1pPesCLu7sh9CWWus5CdaKe1S1OnCb6e4JCYe0qF+O2tU+sdJWTF0xt3\nLthAzesPXYqI6hhlADMxlrpdqa4pk9OSRtJJ0JkM/qXBM80IiZPhqRIRAoGAN6hs\n8Kf8aWn+Rgvgl7+vVuyQ+Vk82PgBT6tOU14IE+PaWaysUvHb6Ki7ONpAdUa131O9\n0nuu+PhRki0zjbitVOqDEszXYSpk3nTcKv++a5p263smIZYoEzdTYFWS9UqYAXRR\n3JfogXTtIxXayz1P6BBVN29Cf7eb7dA0OkjkYY0CgYEAr7GynFt9OEtSCRlCJIoU\n7DZkhH5pXG2FvyFbULGDulbEdx2VMxSdfEwHO1WmJHhuyXnrhIhkqz5eMYB/0lAM\nrEqU68SY4AxXMVfrdjn0+BbB/sJe/nUlhGDirF2ryQcJ+Hc2YUOWeP4eemogio4v\nUVtLVyeJFap9HvU02YcASMQ=\n-----END PRIVATE KEY-----\n",
+  "client_email": "gemini-user@joboard-460821.iam.gserviceaccount.com",
+  "client_id": "111197007859800158312",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gemini-user%40joboard-460821.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

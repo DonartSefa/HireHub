@@ -65,7 +65,6 @@ $jobs = $stmt->fetchAll();
 
 <body>
   <div class="container my-5">
-
     <?php if (count($jobs) > 0): ?>
       <div class="row g-4">
         <?php foreach ($jobs as $job): ?>
@@ -118,6 +117,10 @@ $jobs = $stmt->fetchAll();
       <div class="alert alert-info text-center">No jobs available at the moment.</div>
     <?php endif; ?>
   </div>
+
+  <?php
+  echo $job['employer_name'];
+  ?>
 
 </body>
 
