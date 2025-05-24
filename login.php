@@ -41,6 +41,7 @@
                                             </label>
                                         </div>
 
+                                 <p>Don't have an account!</p>       <a href="register.php">Sign Up</a>
 
 
 

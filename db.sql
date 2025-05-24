@@ -21,11 +21,18 @@ CREATE TABLE jobs (
 
 CREATE TABLE applications (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    job_id INT NOT NULL,
     user_id INT NOT NULL,
-    resume VARCHAR(255),
-    cover_letter TEXT,
+    job_id INT NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    city VARCHAR(100),
+    dob DATE,
+    education_level VARCHAR(100),
+    experience TEXT,
     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
