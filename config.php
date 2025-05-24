@@ -5,7 +5,7 @@
 $user = "root";
 $pass = "";
 $server = "localhost";
-$dbname = "hirehub";
+$dbname = "hirehub2";
 
 try{
     $conn = new PDO("mysql:host=$server;

@@ -15,6 +15,7 @@ CREATE TABLE jobs (
     location VARCHAR(100) NOT NULL,
     category VARCHAR(50) NOT NULL,
     posted_by INT NOT NULL,
+    image VARCHAR (255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE
 );
