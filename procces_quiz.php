@@ -1,6 +1,6 @@
 <?php
 // Replace with your OpenAI API key
-$apiKey = "YOUR_OPENAI_API_KEY";
+$apiKey = "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";
 
 // Gather answers
 $answers = [
