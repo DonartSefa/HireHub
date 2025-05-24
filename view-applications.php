@@ -54,9 +54,6 @@ $applications = $stmt->fetchAll();
         <li style="margin-bottom: 20px;">
           <strong><?php echo htmlspecialchars($app['applicant_name']); ?></strong> (<?php echo htmlspecialchars($app['applicant_email']); ?>)<br />
           <em>Applied on:</em> <?php echo date("F j, Y, g:i a", strtotime($app['applied_at'])); ?><br />
-          <em>Resume:</em> <?php echo htmlspecialchars($app['resume']); ?><br />
-          <em>Cover Letter:</em>
-          <p style="border:1px solid #ccc; padding:10px;"><?php echo nl2br(htmlspecialchars($app['cover_letter'])); ?></p>
         </li>
       <?php endforeach; ?>
     </ul>
