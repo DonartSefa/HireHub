@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>What Job Fits Me?</title>
+  <style>
+    body { font-family: Arial; padding: 2rem; }
+    form { max-width: 600px; margin: auto; }
+    label { font-weight: bold; margin-top: 1rem; display: block; }
+    .result { background: #f0f0f0; padding: 1rem; margin-top: 2rem; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+  <h1>Find Out What Career Matches Your Personality</h1>
+
+  <form id="career-quiz">
+    <label>1. You enjoy:</label>
+    <input type="radio" name="q1" value="structured" required> Structured tasks<br>
+    <input type="radio" name="q1" value="creative"> Creative freedom<br>
+
+    <label>2. You prefer working with:</label>
+    <input type="radio" name="q2" value="data" required> Data<br>
+    <input type="radio" name="q2" value="people"> People<br>
+
+    <label>3. You are more:</label>
+    <input type="radio" name="q3" value="analytical" required> Analytical<br>
+    <input type="radio" name="q3" value="empathetic"> Empathetic<br>
+
+    <br><button type="submit">Find My Job Match</button>
+  </form>
+
+  <div id="output"></div>
+
+  <script>
+    document.getElementById("career-quiz").onsubmit = async function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      const response = await fetch("process_quiz.php", {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await response.text();
+      document.getElementById("output").innerHTML = result;
+    };
+  </script>
+</body>
+</html>

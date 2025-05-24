@@ -51,7 +51,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
-    // Insert job with optional image path
     $stmt = $conn->prepare("INSERT INTO jobs (title, company, location, category, description, posted_by, image) VALUES (?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([$title, $company, $location, $category, $description, $posted_by, $imagePath]);
 

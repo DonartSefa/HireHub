@@ -235,7 +235,7 @@ if (!$job) {
             <div class="job-header-content">
                 <h1>You are applying to <?php echo htmlspecialchars($job['company']); ?></h1>
                 <h4><?php echo htmlspecialchars($job['category']); ?></h4>
-                <a href="browse-jobs.php" class="back-link" title="Go back to job listings">
+                <a href="dashboard.php" class="back-link" title="Go back to job listings">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#666" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                         <polyline points="15 18 9 12 15 6"></polyline>
