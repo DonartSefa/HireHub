@@ -2,140 +2,144 @@
 session_start();
 include_once("config.php");
 
+// Only allow employers to view this
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'employer') {
-    header("Location: login.php");
+    echo "<p style='color:red;'>Unauthorized access.</p>";
     exit;
 }
 
-if (!isset($_GET['job_id'])) {
-    die("Job ID is required.");
-}
-
-$job_id = $_GET['job_id'];
 $employer_id = $_SESSION['user_id'];
 
-$stmt = $conn->prepare("SELECT * FROM jobs WHERE id = ? AND posted_by = ?");
-$stmt->execute([$job_id, $employer_id]);
-$job = $stmt->fetch();
-
-if (!$job) {
-    die("Job not found or you don't have permission to view applications.");
-}
-
+// Get all applications to jobs posted by this employer
 $stmt = $conn->prepare("
-    SELECT applications.*, users.username AS applicant_name, users.email AS applicant_email
-    FROM applications
-    JOIN users ON applications.user_id = users.id
-    WHERE applications.job_id = ?
-    ORDER BY applications.applied_at DESC
+    SELECT a.*, j.title AS job_title, j.company, j.location, u.username
+    FROM applications a
+    JOIN jobs j ON a.job_id = j.id
+    JOIN users u ON a.user_id = u.id
+    WHERE j.posted_by = ?
+    ORDER BY a.applied_at DESC
 ");
-
-$stmt->execute([$job_id]);
-
+$stmt->execute([$employer_id]);
 $applications = $stmt->fetchAll();
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Applications for <?= htmlspecialchars($job['title']) ?> - KosovaJob</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+<h2 style="color:#f47f4c; font-weight:700; margin-bottom: 30px;">Applications to My Jobs</h2>
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f6f6f3;
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 0 20px 50px;
-      color: #333;
-    }
+<style>
+  .application-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-left: 6px solid #4ca1f4;
+    transition: box-shadow 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  .application-card:hover {
+    box-shadow: 0 8px 20px rgba(76,161,244,0.25);
+  }
+  .job-title {
+    color: #4ca1f4;
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .job-company {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 15px;
+    font-style: italic;
+  }
+  .application-info em {
+    display: block;
+    margin-bottom: 6px;
+    font-style: normal;
+    color: #555;
+    font-size: 0.9rem;
+  }
+  .status-label {
+    margin-top: 10px;
+    font-weight: bold;
+  }
+  .status-pending {
+    color: orange;
+  }
+  .status-approved {
+    color: green;
+  }
+  .status-denied {
+    color: red;
+  }
+  .action-buttons {
+    margin-top: 15px;
+  }
+  .action-buttons button {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .approve-btn {
+    background: #28a745;
+    color: white;
+  }
+  .deny-btn {
+    background: #dc3545;
+    color: white;
+  }
+  .no-applications {
+    color: #777;
+    font-style: italic;
+    margin-top: 30px;
+    text-align: center;
+  }
+</style>
 
-    h2 {
-      color: #846c3b;
-      font-weight: 700;
-      font-size: 2rem;
-      margin-bottom: 20px;
-      text-align: center;
-    }
+<?php if (count($applications) > 0): ?>
+  <?php foreach ($applications as $app): ?>
+    <div class="application-card" title="<?= htmlspecialchars($app['job_title']); ?>">
+      <h3 class="job-title"><?= htmlspecialchars($app['job_title']); ?></h3>
+      <div class="job-company">
+        at <?= htmlspecialchars($app['company']); ?> — <?= htmlspecialchars($app['location']); ?>
+      </div>
+      <div class="application-info">
+        <em><strong>Applicant:</strong> <?= htmlspecialchars($app['full_name']); ?> (<?= htmlspecialchars($app['username']); ?>)</em>
+        <em><strong>Email:</strong> <?= htmlspecialchars($app['email']); ?></em>
+        <em><strong>Phone:</strong> <?= htmlspecialchars($app['phone']); ?></em>
+        <em><strong>Gender:</strong> <?= htmlspecialchars($app['gender']); ?></em>
+        <em><strong>Date of Birth:</strong> <?= htmlspecialchars($app['dob']); ?></em>
+        <em><strong>City:</strong> <?= htmlspecialchars($app['city']); ?></em>
+        <em><strong>Education Level:</strong> <?= htmlspecialchars($app['education_level']); ?></em>
+        <em><strong>Experience:</strong> <?= htmlspecialchars($app['experience']); ?></em>
+        <em><strong>Applied On:</strong> <?= date("F j, Y, g:i a", strtotime($app['applied_at'])); ?></em>
+      </div>
 
-    p.back-link {
-      text-align: center;
-      margin-bottom: 30px;
-      font-weight: 600;
-    }
+      <p class="status-label">
+        Status:
+        <?php if ($app['status'] === 'approved'): ?>
+          <span class="status-approved">Approved</span>
+        <?php elseif ($app['status'] === 'denied'): ?>
+          <span class="status-denied">Denied</span>
+        <?php else: ?>
+          <span class="status-pending">Pending</span>
+        <?php endif; ?>
+      </p>
 
-    p.back-link a {
-      color: #846c3b;
-      text-decoration: none;
-      font-size: 1rem;
-      transition: color 0.3s ease;
-    }
-
-    p.back-link a:hover {
-      color: #6c552f;
-      text-decoration: underline;
-    }
-
-    ul.applications-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    ul.applications-list li {
-      background: white;
-      padding: 20px 25px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 6px 15px rgba(132,108,59,0.12);
-      transition: box-shadow 0.3s ease;
-    }
-
-    ul.applications-list li:hover {
-      box-shadow: 0 8px 25px rgba(132,108,59,0.25);
-    }
-
-    ul.applications-list strong {
-      font-size: 1.2rem;
-      color: #4b3e1a;
-    }
-
-    ul.applications-list em {
-      font-style: normal;
-      font-weight: 600;
-      color: #846c3b;
-      margin-top: 6px;
-      display: inline-block;
-    }
-
-    .no-applications {
-      text-align: center;
-      font-size: 1.1rem;
-      color: #666;
-      margin-top: 40px;
-    }
-  </style>
-</head>
-<body>
-
-  <h2>Applications for: <?= htmlspecialchars($job['title']) ?></h2>
-
-  <p class="back-link"><a href="employer-dashboard.php">← Back to My Jobs</a></p>
-
-  <?php if (count($applications) > 0): ?>
-    <ul class="applications-list">
-      <?php foreach ($applications as $app): ?>
-        <li>
-          <strong><?= htmlspecialchars($app['applicant_name']) ?></strong> (<?= htmlspecialchars($app['applicant_email']) ?>)<br />
-          <em>Applied on: <?= date("F j, Y, g:i a", strtotime($app['applied_at'])) ?></em>
-        </li>
-      <?php endforeach; ?>
-    </ul>
-  <?php else: ?>
-    <p class="no-applications">No applications yet for this job.</p>
-  <?php endif; ?>
-
-</body>
-</html>
+      <form method="POST" action="update_application_status.php" class="action-buttons">
+        <input type="hidden" name="application_id" value="<?= $app['id']; ?>">
+        <button type="submit" name="status" value="approved" class="approve-btn">Approve</button>
+        <button type="submit" name="status" value="denied" class="deny-btn">Deny</button>
+      </form>
+    </div>
+  <?php endforeach; ?>
+<?php else: ?>
+  <div class="no-applications">
+    No one has applied to your jobs yet.
+  </div>
+<?php endif; ?>

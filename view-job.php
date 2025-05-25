@@ -18,18 +18,21 @@ $stmt->execute([$job_id]);
 $job = $stmt->fetch();
 
 if (!$job) {
-    die("Job not found.");
+    echo "<p class='text-danger' style='text-align:center;padding:20px;'>Sorry, this job was not found.</p>";
+    exit;
 }
+
+$jobImage = !empty($job['image']) ? $job['image'] : 'default-job.png';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <title><?php echo htmlspecialchars($job['title']); ?> - HireHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
+            <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f9f9f9;
@@ -225,16 +228,22 @@ if (!$job) {
                 max-width: 100%;
             }
         }
+    </style>/
     </style>
 </head>
 
 <body>
     <div class="container">
         <div class="job-header">
-            <img src="<?php echo htmlspecialchars($job['image']); ?>" alt="Job Image" />
+            <img src="<?php echo htmlspecialchars($jobImage); ?>" alt="Job Image" />
             <div class="job-header-content">
-                <h1>You are applying to <?php echo htmlspecialchars($job['company']); ?></h1>
+                <h1><?php echo htmlspecialchars($job['title']); ?> at <?php echo htmlspecialchars($job['company']); ?></h1>
                 <h4><?php echo htmlspecialchars($job['category']); ?></h4>
+                <p><strong>Location:</strong> <?php echo htmlspecialchars($job['location']); ?></p>
+                <p><strong>Salary:</strong> <?php echo htmlspecialchars($job['detail']); ?></p>
+                <p><strong>Posted By:</strong> <?php echo htmlspecialchars($job['employer_name']); ?></p>
+                <p><strong>Posted On:</strong> <?php echo date("F j, Y", strtotime($job['created_at'])); ?></p>
+                <p><strong>Job ID:</strong> <?php echo htmlspecialchars($job['id']); ?></p>
                 <a href="dashboard.php" class="back-link" title="Go back to job listings">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#666" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
@@ -246,11 +255,15 @@ if (!$job) {
         </div>
 
         <div class="form-wrapper">
+            <h3>Job Description</h3>
+            <p><?php echo nl2br(htmlspecialchars($job['description'])); ?></p>
+        </div>
+
+        <div class="form-wrapper">
             <form action="applyJobLogic.php" method="POST" enctype="multipart/form-data" novalidate>
-                <input type="hidden" name="job_id" value="<?php echo $job['id']; ?>">
+                <input type="hidden" name="job_id" value="<?php echo htmlspecialchars($job['id']); ?>">
 
                 <h3>Personal Information</h3>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label for="first_name">First Name *</label>
@@ -275,20 +288,20 @@ if (!$job) {
                     <div class="form-group">
                         <label>Date of Birth *</label>
                         <div class="form-row" style="gap: 10px;">
-                            <select name="dob_day" required aria-label="Day">
+                            <select name="dob_day" required>
                                 <option value="">Day</option>
-                                <?php for ($d = 1; $d <= 31; $d++) echo "<option>$d</option>"; ?>
+                                <?php for ($d = 1; $d <= 31; $d++) echo "<option value='$d'>$d</option>"; ?>
                             </select>
-                            <select name="dob_month" required aria-label="Month">
+                            <select name="dob_month" required>
                                 <option value="">Month</option>
                                 <?php
                                 $months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                                foreach ($months as $m) echo "<option>$m</option>";
+                                foreach ($months as $m) echo "<option value='$m'>$m</option>";
                                 ?>
                             </select>
-                            <select name="dob_year" required aria-label="Year">
+                            <select name="dob_year" required>
                                 <option value="">Year</option>
-                                <?php for ($y = date('Y') - 65; $y <= date('Y') - 16; $y++) echo "<option>$y</option>"; ?>
+                                <?php for ($y = date('Y') - 65; $y <= date('Y') - 16; $y++) echo "<option value='$y'>$y</option>"; ?>
                             </select>
                         </div>
                     </div>
@@ -335,6 +348,12 @@ if (!$job) {
                     </div>
                 </div>
 
+                <h3>Resume Upload</h3>
+                <div class="form-group">
+                    <label for="resume">Upload Resume (PDF or DOCX)</label>
+                    <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" />
+                </div>
+
                 <button type="submit" class="submit-btn">Submit Application</button>
             </form>
         </div>
@@ -344,10 +363,8 @@ if (!$job) {
         <?php endif; ?>
 
         <div class="footer-links">
-
             <a href="dashboard.php">Back to Dashboard</a>
         </div>
     </div>
 </body>
-
 </html>
