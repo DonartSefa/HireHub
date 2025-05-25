@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 24. Mai 2025 um 22:04
--- Server-Version: 10.4.32-MariaDB
--- PHP-Version: 8.0.30
+-- Generation Time: May 25, 2025 at 09:25 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Datenbank: `hirehub`
+-- Database: `hirehub`
 --
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `applications`
+-- Table structure for table `applications`
 --
 
 CREATE TABLE `applications` (
@@ -43,7 +43,7 @@ CREATE TABLE `applications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `applications`
+-- Dumping data for table `applications`
 --
 
 INSERT INTO `applications` (`id`, `user_id`, `job_id`, `full_name`, `email`, `phone`, `gender`, `city`, `dob`, `education_level`, `experience`, `applied_at`) VALUES
@@ -52,7 +52,7 @@ INSERT INTO `applications` (`id`, `user_id`, `job_id`, `full_name`, `email`, `ph
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `jobs`
+-- Table structure for table `jobs`
 --
 
 CREATE TABLE `jobs` (
@@ -68,7 +68,7 @@ CREATE TABLE `jobs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `jobs`
+-- Dumping data for table `jobs`
 --
 
 INSERT INTO `jobs` (`id`, `title`, `company`, `description`, `location`, `category`, `posted_by`, `created_at`, `image`) VALUES
@@ -95,12 +95,13 @@ INSERT INTO `jobs` (`id`, `title`, `company`, `description`, `location`, `catego
 (195, 'Customer Support Rep', 'SupportSphere', 'Resolve customer issues and inquiries.', 'Phoenix, AZ', 'Customer Service', 2, '2025-05-24 13:33:37', 'https://images.unsplash.com/photo-1581093588401-9c79ae1d93c2?w=400&h=300&fit=crop'),
 (196, 'Business Analyst', 'InsightPro', 'Analyze business processes and suggest improvements.', 'Columbus, OH', 'Business', 3, '2025-05-24 13:33:37', 'https://images.unsplash.com/photo-1516321165247-4aa89a48be28?w=400&h=300&fit=crop'),
 (197, 'SEO Specialist', 'RankBoost', 'Improve website ranking and traffic.', 'Dallas, TX', 'Marketing', 1, '2025-05-24 13:33:37', 'https://images.unsplash.com/photo-1520880867055-1e30d1cb001c?w=400&h=300&fit=crop'),
-(198, 'Graphic Artist', 'VisualHive', 'Create marketing visuals and graphics.', 'San Jose, CA', 'Design', 2, '2025-05-24 13:33:37', 'https://images.unsplash.com/photo-1531497865146-76a1e64eac2c?w=400&h=300&fit=crop');
+(198, 'Graphic Artist', 'VisualHive', 'Create marketing visuals and graphics.', 'San Jose, CA', 'Design', 2, '2025-05-24 13:33:37', 'https://images.unsplash.com/photo-1531497865146-76a1e64eac2c?w=400&h=300&fit=crop'),
+(199, 'Prishtina', 'Prishtina', 'PrishtinaPrishtina', 'Prishtina', 'Prishtina', 1, '2025-05-24 20:08:07', '61d7959bab0d501eaa233b1c4d7c01fd.png');
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -113,7 +114,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `users`
+-- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `user_type`, `created_at`) VALUES
@@ -129,11 +130,11 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `user_type`, `create
 (10, 'admin', 'admin@example.com', 'password123', '', '2025-05-24 13:16:53');
 
 --
--- Indizes der exportierten Tabellen
+-- Indexes for dumped tables
 --
 
 --
--- Indizes für die Tabelle `applications`
+-- Indexes for table `applications`
 --
 ALTER TABLE `applications`
   ADD PRIMARY KEY (`id`),
@@ -141,54 +142,54 @@ ALTER TABLE `applications`
   ADD KEY `job_id` (`job_id`);
 
 --
--- Indizes für die Tabelle `jobs`
+-- Indexes for table `jobs`
 --
 ALTER TABLE `jobs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `posted_by` (`posted_by`);
 
 --
--- Indizes für die Tabelle `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- AUTO_INCREMENT für exportierte Tabellen
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT für Tabelle `applications`
+-- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT für Tabelle `jobs`
+-- AUTO_INCREMENT for table `jobs`
 --
 ALTER TABLE `jobs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=199;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=200;
 
 --
--- AUTO_INCREMENT für Tabelle `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
--- Constraints der exportierten Tabellen
+-- Constraints for dumped tables
 --
 
 --
--- Constraints der Tabelle `applications`
+-- Constraints for table `applications`
 --
 ALTER TABLE `applications`
   ADD CONSTRAINT `applications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `applications_ibfk_2` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints der Tabelle `jobs`
+-- Constraints for table `jobs`
 --
 ALTER TABLE `jobs`
   ADD CONSTRAINT `jobs_ibfk_1` FOREIGN KEY (`posted_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
