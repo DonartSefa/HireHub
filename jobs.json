@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "title": "Frontend Developer",
+    "company": "Awesome Co.",
+    "location": "Remote",
+    "description": "Build amazing user interfaces with React."
+  },
+  {
+    "id": 2,
+    "title": "Backend Developer",
+    "company": "Tech Corp",
+    "location": "New York",
+    "description": "Work on APIs and databases."
+  }
+]
