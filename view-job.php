@@ -2,6 +2,7 @@
 session_start();
 include_once("config.php");
 
+// Validate user session
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'job_seeker') {
     header("Location: login.php");
     exit;
@@ -11,360 +12,195 @@ if (!isset($_GET['id'])) {
     die("Job ID not specified.");
 }
 
-$job_id = $_GET['id'];
-
-$stmt = $conn->prepare("SELECT jobs.*, users.username AS employer_name FROM jobs JOIN users ON jobs.posted_by = users.id WHERE jobs.id = ?");
+$job_id = (int)$_GET['id'];
+$stmt = $conn->prepare("
+    SELECT j.*, u.username AS employer_name
+    FROM jobs j
+    JOIN users u ON j.posted_by = u.id
+    WHERE j.id = ?
+");
 $stmt->execute([$job_id]);
 $job = $stmt->fetch();
 
 if (!$job) {
-    echo "<p class='text-danger' style='text-align:center;padding:20px;'>Sorry, this job was not found.</p>";
-    exit;
+    die("<p class='text-danger text-center mt-4'>Job not found.</p>");
 }
 
-$jobImage = !empty($job['image']) ? $job['image'] : 'default-job.png';
+// Initialize variables
+$success = false;
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Collect input
+    $first_name  = trim($_POST['first_name']);
+    $last_name   = trim($_POST['last_name']);
+    $full_name   = "$first_name $last_name";
+    $gender      = $_POST['gender'];
+    $dob         = date('Y-m-d', strtotime("{$_POST['dob_year']}-{$_POST['dob_month']}-{$_POST['dob_day']}"));
+    $city        = trim($_POST['city']);
+    $phone       = trim($_POST['phone']);
+    $email       = trim($_POST['email']);
+    $education   = $_POST['education_level'];
+    $experience  = $_POST['experience'];
+    $resume_path = null;
+
+    // Handle resume upload
+    if (!empty($_FILES['resume']['name'])) {
+        $allowed = ['pdf', 'doc', 'docx'];
+        $ext = strtolower(pathinfo($_FILES['resume']['name'], PATHINFO_EXTENSION));
+
+        if (!in_array($ext, $allowed)) {
+            $error = "Resume must be a PDF, DOC, or DOCX.";
+        } elseif ($_FILES['resume']['size'] > 2 * 1024 * 1024) {
+            $error = "Resume file must be under 2 MB.";
+        } else {
+            $upload_dir = __DIR__ . '/uploads/resumes/';
+            if (!file_exists($upload_dir)) mkdir($upload_dir, 0755, true);
+
+            $new_name = uniqid("resume_", true) . "." . $ext;
+            $path = $upload_dir . $new_name;
+
+            if (!move_uploaded_file($_FILES['resume']['tmp_name'], $path)) {
+                $error = "Failed to upload resume.";
+            } else {
+                $resume_path = "uploads/resumes/$new_name";
+            }
+        }
+    }
+
+    // Insert application
+    if (!$error) {
+        $stmt = $conn->prepare("
+            INSERT INTO applications 
+            (user_id, job_id, full_name, email, phone, gender, city, dob, education_level, experience, applied_at, resume_path)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+        ");
+        $success = $stmt->execute([
+            $_SESSION['user_id'], $job_id, $full_name, $email, $phone, $gender,
+            $city, $dob, $education, $experience, $resume_path
+        ]);
+
+        if (!$success) {
+            $error = "Application submission failed. Try again.";
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title><?php echo htmlspecialchars($job['title']); ?> - HireHub</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <title>Apply – <?= htmlspecialchars($job['title']); ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-            <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-            margin: 0;
-            padding: 20px 0 60px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-
-        .job-header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            background-color: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-            margin-bottom: 35px;
-        }
-
-        .job-header img {
-            width: 130px;
-            height: 130px;
-            object-fit: contain;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
-        }
-
-        .job-header-content h1 {
-            margin: 0 0 10px;
-            font-size: 1.9rem;
-            color: #f47f4c;
-            font-weight: 700;
-        }
-
-        .job-header-content h4 {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #555;
-        }
-
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            font-size: 14px;
-            color: #666;
-            text-decoration: none;
-            margin-top: 10px;
-            transition: color 0.25s ease;
-        }
-
-        .back-link svg {
-            margin-right: 6px;
-        }
-
-        .back-link:hover {
-            color: #f47f4c;
-        }
-
-        .form-wrapper {
-            background-color: #fff;
-            padding: 30px 35px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgb(0 0 0 / 0.07);
-        }
-
-        .form-wrapper h3 {
-            font-size: 1.8rem;
-            margin-bottom: 25px;
-            border-bottom: 3px solid #f04e23;
-            padding-bottom: 8px;
-            color: #333;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .form-row > div {
-            flex: 1;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #444;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 15px;
-            transition: border-color 0.3s ease;
-        }
-
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #f47f4c;
-            box-shadow: 0 0 6px rgba(244, 127, 76, 0.5);
-        }
-
-        .radio-group {
-            margin-top: 8px;
-        }
-
-        .radio-group label {
-            font-weight: normal;
-            margin-bottom: 10px;
-            display: block;
-            cursor: pointer;
-        }
-
-        .radio-group input[type="radio"] {
-            margin-right: 8px;
-            cursor: pointer;
-        }
-
-        .submit-btn {
-            background-color: #f04e23;
-            color: white;
-            padding: 14px 30px;
-            border: none;
-            font-weight: 700;
-            font-size: 1.1rem;
+        body { background: #f8f9fa; }
+        .application-form {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
             border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            width: 100%;
-            max-width: 300px;
-            display: block;
-            margin: 30px auto 0;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
-
-        .submit-btn:hover {
-            background-color: #d7411e;
-        }
-
-        .success-message {
-            color: #2d7a2d;
-            font-weight: 600;
-            text-align: center;
-            margin-top: 25px;
-            font-size: 1.2rem;
-        }
-
-        .footer-links {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 15px;
-        }
-
-        .footer-links a {
-            color: #f47f4c;
-            text-decoration: none;
-            margin: 0 15px;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: #d7411e;
-        }
-
-        @media (max-width: 768px) {
-            .job-header {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
-
-            .form-row {
-                flex-direction: column;
-            }
-
-            .submit-btn {
-                max-width: 100%;
-            }
-        }
-    </style>/
+        h1 { font-size: 28px; margin-bottom: 10px; }
+        label { font-weight: 500; margin-top: 10px; }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="job-header">
-            <img src="<?php echo htmlspecialchars($jobImage); ?>" alt="Job Image" />
-            <div class="job-header-content">
-                <h1><?php echo htmlspecialchars($job['title']); ?> at <?php echo htmlspecialchars($job['company']); ?></h1>
-                <h4><?php echo htmlspecialchars($job['category']); ?></h4>
-                <p><strong>Location:</strong> <?php echo htmlspecialchars($job['location']); ?></p>
-                <p><strong>Salary:</strong> <?php echo htmlspecialchars($job['detail']); ?></p>
-                <p><strong>Posted By:</strong> <?php echo htmlspecialchars($job['employer_name']); ?></p>
-                <p><strong>Posted On:</strong> <?php echo date("F j, Y", strtotime($job['created_at'])); ?></p>
-                <p><strong>Job ID:</strong> <?php echo htmlspecialchars($job['id']); ?></p>
-                <a href="dashboard.php" class="back-link" title="Go back to job listings">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#666" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                    Back to Job Listings
-                </a>
+
+<div class="application-form">
+    <a href="dashboard.php" class="btn btn-secondary btn-sm mb-3">&larr; Back to Dashboard</a>
+
+    <h1><?= htmlspecialchars($job['title']); ?> at <?= htmlspecialchars($job['company']); ?></h1>
+    <p><strong>Employer:</strong> <?= htmlspecialchars($job['employer_name']); ?></p>
+    <p><?= nl2br(htmlspecialchars($job['description'])); ?></p>
+
+    <?php if ($success): ?>
+        <div class="alert alert-success mt-3">✅ Your application has been submitted successfully!</div>
+    <?php elseif ($error): ?>
+        <div class="alert alert-danger mt-3">❌ <?= htmlspecialchars($error); ?></div>
+    <?php endif; ?>
+
+    <?php if (!$success): ?>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-6">
+                <label>First Name *</label>
+                <input type="text" name="first_name" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+                <label>Last Name *</label>
+                <input type="text" name="last_name" class="form-control" required>
             </div>
         </div>
 
-        <div class="form-wrapper">
-            <h3>Job Description</h3>
-            <p><?php echo nl2br(htmlspecialchars($job['description'])); ?></p>
+        <label class="mt-3">Gender *</label>
+        <select name="gender" class="form-select" required>
+            <option value="">Select...</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+        </select>
+
+        <label class="mt-3">Date of Birth *</label>
+        <div class="row">
+            <div class="col-md-4">
+                <select name="dob_day" class="form-select" required>
+                    <option value="">Day</option>
+                    <?php for ($i = 1; $i <= 31; $i++) echo "<option>$i</option>"; ?>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="dob_month" class="form-select" required>
+                    <option value="">Month</option>
+                    <?php foreach (range(1,12) as $m) echo "<option>$m</option>"; ?>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="dob_year" class="form-select" required>
+                    <option value="">Year</option>
+                    <?php for ($y = date('Y') - 16; $y >= date('Y') - 65; $y--) echo "<option>$y</option>"; ?>
+                </select>
+            </div>
         </div>
 
-        <div class="form-wrapper">
-            <form action="applyJobLogic.php" method="POST" enctype="multipart/form-data" novalidate>
-                <input type="hidden" name="job_id" value="<?php echo htmlspecialchars($job['id']); ?>">
+        <label class="mt-3">City *</label>
+        <input type="text" name="city" class="form-control" required>
 
-                <h3>Personal Information</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="first_name">First Name *</label>
-                        <input type="text" id="first_name" name="first_name" required placeholder="John" />
-                    </div>
-                    <div class="form-group">
-                        <label for="last_name">Last Name *</label>
-                        <input type="text" id="last_name" name="last_name" required placeholder="Doe" />
-                    </div>
+        <label class="mt-3">Phone *</label>
+        <input type="text" name="phone" class="form-control" required>
+
+        <label class="mt-3">Email *</label>
+        <input type="email" name="email" class="form-control" required>
+
+        <label class="mt-3">Education Level *</label>
+        <select name="education_level" class="form-select" required>
+            <option value="">Select...</option>
+            <option>High School</option>
+            <option>Bachelor's</option>
+            <option>Master's</option>
+            <option>PhD</option>
+            <option>Other</option>
+        </select>
+
+        <label class="mt-3">Experience *</label>
+        <div>
+            <?php foreach (['More than 5 years','3 - 5 years','1 - 3 years','Less than 1 year','No experience'] as $exp): ?>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="experience" value="<?= $exp ?>" required>
+                    <label class="form-check-label"><?= $exp ?></label>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="gender">Gender *</label>
-                        <select id="gender" name="gender" required>
-                            <option value="">Select gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Date of Birth *</label>
-                        <div class="form-row" style="gap: 10px;">
-                            <select name="dob_day" required>
-                                <option value="">Day</option>
-                                <?php for ($d = 1; $d <= 31; $d++) echo "<option value='$d'>$d</option>"; ?>
-                            </select>
-                            <select name="dob_month" required>
-                                <option value="">Month</option>
-                                <?php
-                                $months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                                foreach ($months as $m) echo "<option value='$m'>$m</option>";
-                                ?>
-                            </select>
-                            <select name="dob_year" required>
-                                <option value="">Year</option>
-                                <?php for ($y = date('Y') - 65; $y <= date('Y') - 16; $y++) echo "<option value='$y'>$y</option>"; ?>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="city">City *</label>
-                        <input type="text" id="city" name="city" required placeholder="Your city" />
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Phone Number *</label>
-                        <input type="text" id="phone" name="phone" required placeholder="+1 234 567 8900" />
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email Address *</label>
-                    <input type="email" id="email" name="email" required placeholder="you@example.com" />
-                </div>
-
-                <h3>Education</h3>
-                <div class="form-group">
-                    <label for="education_level">Education Level *</label>
-                    <select id="education_level" name="education_level" required>
-                        <option value="">Select education level</option>
-                        <option value="High School">High School</option>
-                        <option value="Bachelor's">Bachelor's</option>
-                        <option value="Master's">Master's</option>
-                        <option value="PhD">PhD</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <h3>Work Experience</h3>
-                <div class="form-group">
-                    <label>How many years of experience do you have in this field?</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="experience" value="More than 5 years" required> More than 5 years</label>
-                        <label><input type="radio" name="experience" value="3 - 5 years"> 3 - 5 years</label>
-                        <label><input type="radio" name="experience" value="1 - 3 years"> 1 - 3 years</label>
-                        <label><input type="radio" name="experience" value="Less than 1 year"> Less than 1 year</label>
-                        <label><input type="radio" name="experience" value="No experience"> No experience</label>
-                    </div>
-                </div>
-
-                <h3>Resume Upload</h3>
-                <div class="form-group">
-                    <label for="resume">Upload Resume (PDF or DOCX)</label>
-                    <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" />
-                </div>
-
-                <button type="submit" class="submit-btn">Submit Application</button>
-            </form>
+            <?php endforeach; ?>
         </div>
 
-        <?php if (isset($_GET['applied'])): ?>
-            <p class="success-message">Application submitted successfully!</p>
-        <?php endif; ?>
+        <label class="mt-3">Upload Resume (PDF, DOC, DOCX – Max 2MB)</label>
+        <input type="file" name="resume" class="form-control">
 
-        <div class="footer-links">
-            <a href="dashboard.php">Back to Dashboard</a>
-        </div>
-    </div>
+        <button type="submit" class="btn btn-primary mt-4 w-100">Submit Application</button>
+    </form>
+    <?php endif; ?>
+</div>
+
 </body>
 </html>

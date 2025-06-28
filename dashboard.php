@@ -20,7 +20,7 @@ $username = $user ? $user['username'] : 'User';
 $jobId = 0;
 $hasJob = false;
 if ($userType === 'employer') {
-  $jobQuery = $conn->prepare("SELECT id FROM jobs WHERE posted_by = ?" );
+  $jobQuery = $conn->prepare("SELECT id FROM jobs WHERE posted_by = ? LIMIT 1");
   $jobQuery->execute([$userId]);
   $jobData = $jobQuery->fetch();
   if ($jobData) {
@@ -29,16 +29,12 @@ if ($userType === 'employer') {
   }
 }
 
-// Setup the "My Applications" onclick JS action based on user type and job availability
+// Setup "My Applications" link
 if ($userType === 'employer') {
-  if ($hasJob) {
-    $inboxJs = "loadApplications('view-applications.php?job_id=$jobId'); return false;";
-  } else {
-    // Employer has no posted jobs - show alert
-    $inboxJs = "alert('You have no posted jobs yet, so no applications to view.'); return false;";
-  }
+  $inboxJs = $hasJob
+    ? "loadApplications('view-applications.php?job_id=$jobId'); return false;"
+    : "alert('You have no posted jobs yet, so no applications to view.'); return false;";
 } else {
-  // For job seekers
   $inboxJs = "loadApplications('my-applications.php'); return false;";
 }
 ?>
@@ -51,7 +47,6 @@ if ($userType === 'employer') {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
-    /* ... Your CSS styles here (same as your original) ... */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body, html { height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6fb; }
 
@@ -81,6 +76,7 @@ if ($userType === 'employer') {
       cursor: pointer;
     }
     .sidebar-menu a:hover { color: #fff; }
+
     .sidebar-footer a {
       display: block;
       color: #aab2c8;
@@ -125,51 +121,12 @@ if ($userType === 'employer') {
       border: 2px solid #ddd;
     }
 
-    /* Job card styles for browse-jobs content */
     .job-card {
       background: #fff;
       border-radius: 10px;
       box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
       margin-bottom: 20px;
       padding: 20px;
-      transition: box-shadow 0.3s ease;
-    }
-    .job-card:hover {
-      box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
-    }
-    .job-title {
-      font-weight: 700;
-      color: #007bff;
-      text-decoration: none;
-    }
-    .job-company-location {
-      color: #555;
-      font-size: 0.9rem;
-      margin-bottom: 10px;
-    }
-    .job-description {
-      color: #333;
-      font-size: 0.95rem;
-      margin-bottom: 10px;
-      max-height: 60px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .apply-btn {
-      font-weight: 600;
-      color: #fff;
-      background-color: #007bff;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 6px;
-      text-decoration: none;
-      display: inline-block;
-      transition: background-color 0.3s ease;
-    }
-    .apply-btn:hover {
-      background-color: #0056b3;
-      text-decoration: none;
-      color: #fff;
     }
     .no-jobs, .no-applications {
       text-align: center;
@@ -188,10 +145,15 @@ if ($userType === 'employer') {
         <h2>JobHorizon</h2>
       </div>
       <ul class="sidebar-menu">
-        <li><a href="dashboard.php"><i class="fas fa-chart-pie"></i> Overview</a></li>
-        <li><a href="#" onclick="<?= $inboxJs ?>"><i class="fas fa-inbox"></i> My Applications</a></li>
-        <li><a href="#"><i class="fas fa-users-cog"></i> User Management</a></li>
-        <li><a href="#" id="aiHelpBtn"><i class="fas fa-robot"></i> Need AI help?</a></li>
+        <?php if ($userType === 'employer'): ?>
+          <li><a href="#" onclick="<?= $inboxJs ?>"><i class="fas fa-inbox"></i> My Applications</a></li>
+          <li><a href="employer-dashboard.php"><i class="fas fa-briefcase"></i> My Job Posts</a></li>
+        <?php else: ?>
+          <li><a href="dashboard.php"><i class="fas fa-chart-pie"></i> Overview</a></li>
+          <li><a href="#" onclick="<?= $inboxJs ?>"><i class="fas fa-inbox"></i> My Applications</a></li>
+          <li><a href="#"><i class="fas fa-users-cog"></i> User Management</a></li>
+          <li><a href="#" id="aiHelpBtn"><i class="fas fa-robot"></i> Need AI help?</a></li>
+        <?php endif; ?>
       </ul>
       <div class="sidebar-footer">
         <a href="#"><i class="fas fa-cog"></i> Settings</a>
@@ -209,17 +171,15 @@ if ($userType === 'employer') {
       </div>
 
       <div id="dynamic-content">
-        <?php 
-          // Show job seeker browse jobs initially
+        <?php
           if ($userType === 'job_seeker') {
             include 'browse-jobs.php';
           } else {
-            echo "<p>Use the Inbox menu to view your applications.</p>";
+            echo "<p>Use the menu to view applications or manage your job posts.</p>";
           }
         ?>
       </div>
     </div>
-
   </div>
 
   <!-- AI Help Modal -->
@@ -231,7 +191,6 @@ if ($userType === 'employer') {
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>Ask about jobs and we'll filter results for you.</p>
           <textarea id="aiQueryInput" rows="5" class="form-control" placeholder="Enter your question or keywords here..."></textarea>
           <button id="aiSendBtn" type="button" class="btn btn-primary mt-3">Send</button>
           <div id="aiHelpResponse" class="mt-3"></div>
@@ -247,81 +206,45 @@ if ($userType === 'employer') {
 
   <script>
     function loadApplications(url) {
-      console.log("Loading applications from URL:", url);
       const container = document.getElementById('dynamic-content');
       container.innerHTML = "<p>Loading...</p>";
-
       fetch(url)
-        .then(response => {
-          if (!response.ok) throw new Error("Failed to load content.");
-          return response.text();
-        })
-        .then(html => {
-          container.innerHTML = html;
-        })
-        .catch(error => {
-          container.innerHTML = `<p style="color:red;">${error.message}</p>`;
-        });
+        .then(res => res.ok ? res.text() : Promise.reject("Failed to load"))
+        .then(html => container.innerHTML = html)
+        .catch(err => container.innerHTML = `<p style="color:red;">${err}</p>`);
     }
 
-    function loadBrowseJobs() {
-      const container = document.getElementById('dynamic-content');
-      container.innerHTML = "<p>Loading jobs...</p>";
-
-      fetch('browse-jobs-content.php')
-        .then(response => {
-          if (!response.ok) throw new Error("Failed to load jobs.");
-          return response.text();
-        })
-        .then(html => {
-          container.innerHTML = html;
-        })
-        .catch(error => {
-          container.innerHTML = `<p style="color:red;">${error.message}</p>`;
-        });
-    }
-
-    // Open AI Help Modal on sidebar click
-    document.getElementById('aiHelpBtn').addEventListener('click', function(e) {
+    document.getElementById('aiHelpBtn')?.addEventListener('click', function(e) {
       e.preventDefault();
-      var aiModal = new bootstrap.Modal(document.getElementById('aiHelpModal'));
-      aiModal.show();
-
-      // Clear previous inputs
+      const modal = new bootstrap.Modal(document.getElementById('aiHelpModal'));
+      modal.show();
       document.getElementById('aiQueryInput').value = "";
       document.getElementById('aiHelpResponse').innerHTML = "";
     });
 
-    // Handle AI Send button click
-    document.getElementById('aiSendBtn').addEventListener('click', function() {
+    document.getElementById('aiSendBtn')?.addEventListener('click', function() {
       const query = document.getElementById('aiQueryInput').value.trim();
       const responseDiv = document.getElementById('aiHelpResponse');
       if (!query) {
         responseDiv.innerHTML = '<div class="alert alert-warning">Please enter a query.</div>';
         return;
       }
-      responseDiv.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
-
+      responseDiv.innerHTML = '<div class="spinner-border text-primary"></div>';
       fetch('filter-jobs.php', {
         method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'query=' + encodeURIComponent(query)
       })
-      .then(response => {
-        if (!response.ok) throw new Error("Failed to fetch jobs.");
-        return response.text();
-      })
+      .then(res => res.ok ? res.text() : Promise.reject("Failed to fetch"))
       .then(html => {
-        responseDiv.innerHTML = '<div class="alert alert-success">Showing results for your query.</div>';
+        responseDiv.innerHTML = '<div class="alert alert-success">Results loaded.</div>';
         document.getElementById('dynamic-content').innerHTML = html;
         setTimeout(() => {
-          var aiModalEl = document.getElementById('aiHelpModal');
-          var modal = bootstrap.Modal.getInstance(aiModalEl);
-          modal.hide();
+          bootstrap.Modal.getInstance(document.getElementById('aiHelpModal')).hide();
         }, 1500);
       })
       .catch(err => {
-        responseDiv.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+        responseDiv.innerHTML = `<div class="alert alert-danger">${err}</div>`;
       });
     });
   </script>
